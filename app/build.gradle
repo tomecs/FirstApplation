@@ -1,5 +1,15 @@
 apply plugin: 'com.android.application'
 
+//定义时间
+def releaseTime() {
+    return new Date().format("yyyyMMdd", TimeZone.getTimeZone("UTC"))
+}
+
+//设置发布的显示的版本号
+def getVersionName(){
+    return "1.2.0"
+}
+
 android {
     compileSdkVersion 26
     defaultConfig {
@@ -11,42 +21,65 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        debug {
+            buildConfigField("boolean","API_DEBUG","true")
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
         release {
+            buildConfigField("boolean","API_DEBUG","false")
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    android.applicationVariants.all { variant ->
-        variant.outputs.all {
-            outputFileName = "E:\\xinlebao_${defaultConfig.versionName}_${111}.apk"
-        }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 
-//    applicationVariants.all { variant ->
-//        variant.outputs.each { output ->
-//            def outputFile = output.outputFile
-//            def fileName
-//            if (outputFile != null && outputFile.name.endsWith('.apk')) {
-//                if (variant.buildType.name.equals('release')) {
-//                    fileName = "知与家长_${defaultConfig.versionName}_${defaultConfig.versionCode}.apk"
-//                } else if (variant.buildType.name.equals('debug')) {
-//                    fileName = "知与家长_${defaultConfig.versionName}_${defaultConfig.versionCode}_debug.apk"
-//                }
-//                output.outputFile = new File(outputFile.parent, fileName)
-//            }
-//        }
+//修改打包不能成功配置
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+//配置自定义打包名称
+    applicationVariants.all { variant ->
 
-//            if (!variant.buildType.isDebuggable()) {
-//                //获取签名的名字 variant.signingConfig.name
-//                //要被替换的源字符串
-//                def sourceFile = "-${variant.flavorName}-${variant.buildType.name}"
-//                //替换的字符串
-//                def replaceFile = "_V${variant.versionName}_${variant.flavorName}_${variant.buildType.name}_${buildTime()}"
-//                outputFileName = output.outputFile.name.replace(sourceFile, replaceFile);
-//                //遗留问题：如何获取当前module的name，如CodeBooke这个名字怎么获取到
-//            }
-//        }
-//    }
+        variant.outputs.all {
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                if (variant.buildType.name.equals('release')) {
+                    outputFileName  = "CeShi_${getVersionName()}_${releaseTime()}_release.apk"
+                } else if (variant.buildType.name.equals('debug')) {
+                    outputFileName  = "CeShi_${getVersionName()}_${releaseTime()}_debug.apk"
+                }
+            }
+        }
+    }
+}
+
+//知识介绍
+//1、gradle中定义变量和函数 通过关键字 def 来定义
+//例如：def versionStr = "1.0.1"
+//def myFunction() { return "xxxxx" }
+//
+//2、gradle中时间使用
+//new Date().format("yyyyMMdd", TimeZone.getTimeZone("UTC");
+//        这行代码的意思是“当前时间是UTC时区，已yyyyMMdd格式化时间输出”
+//
+//        3、gradle中variant.mergedFlavor使用
+//        variant.mergedFlavor.versionName 表示修改打包时versionName的值
+//
+//        4、gradle中variant.outputs使用
+//        variant.outputs表示输出相关配置
+//
+//        下面是我的build.gradle文件
+//
+//        apply plugin: 'com.android.application'
+//        apply plugin: 'android-apt'
+
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
 }
 
 dependencies {
